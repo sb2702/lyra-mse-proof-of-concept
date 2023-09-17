@@ -80,25 +80,25 @@ window.decodeLyra = function (encodedAudio) {
     return new Promise(function (resolve) {
 
 
-        setTimeout(function () {
-
+        function checkIfReady(){
 
             if(isLyraReady()){
 
                 const decoded = decodeWithLyra(encodedAudio, 16000, 144556);
 
-                resolve(decoded);
+                return resolve(decoded);
 
             } else {
-                console.log("Not ready");
+                return setTimeout(checkIfReady, 100);
             }
 
 
-        }, 1000);
+        }
+
+        checkIfReady();
 
 
     })
-
 
 }
 
