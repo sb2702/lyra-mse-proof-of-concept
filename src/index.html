@@ -1,10 +1,212 @@
 <html lang="en" class="js-focus-visible" data-js-focus-visible="">
 
 <head>
-
+    <script src="lame.all.js"></script>
+    <script src="amrnb.js"></script>
 </head>
 
 <body>
+
+
+<audio id="audio"  controls></audio>
+
+
+<script>
+    const MP3Encoder = function(){
+
+
+        var lib = new lamejs();
+
+        var mp3encoder = new lib.Mp3Encoder(1,   8000, 128);
+
+        function encode(buffer){
+
+            var input = float32ToInt(buffer);
+
+            return mp3encoder.encodeBuffer(input);
+        }
+
+
+        function float32ToInt(f32){
+
+
+            var len = f32.length, i = 0;
+            var i16 = new Int16Array(len);
+
+            while(i < len)
+                i16[i] = convert(f32[i++]);
+
+            function convert(n) {
+                var v = n < 0 ? n * 32768 : n * 32767;       // convert in range [-32768, 32767]
+                return Math.max(-32768, Math.min(32768, v)); // clamp
+            }
+
+            return i16;
+
+        }
+
+        function finish(){
+            return mp3encoder.flush();
+        }
+
+
+        function toFile(buffer){
+
+            var mp3data =  [encode(buffer)];
+
+            mp3data.push(finish());
+
+            return mp3data;
+
+        }
+
+
+
+        this.encode = encode;
+        this.toFile = toFile;
+
+
+
+
+    };
+
+
+    const audio = document.getElementById('audio');
+
+    if (window.MediaSource) {
+        const mediaSource = new MediaSource();
+        audio.src = URL.createObjectURL(mediaSource);
+        mediaSource.addEventListener('sourceopen', sourceOpen);
+    } else {
+        console.log('The Media Source Extensions API is not supported.');
+    }
+
+
+
+
+    function fetchBlob(url, callback) {
+        var xhr = new XMLHttpRequest();
+        xhr.open('GET', url);
+        xhr.responseType = 'blob';
+        xhr.onload = function() {
+            callback(this.response);
+        };
+        xhr.onerror = function() {
+            alert('Failed to fetch ' + url);
+        };
+        xhr.send();
+    }
+
+    function readBlob(blob, callback) {
+        var reader = new FileReader();
+        reader.onload = function(e) {
+            var data = new Uint8Array(e.target.result);
+            callback(data);
+        };
+        reader.readAsArrayBuffer(blob);
+    }
+
+    function fetchAndReadBlob(url, callback) {
+        fetchBlob(url, function(blob) {
+            readBlob(blob, callback);
+        });
+    }
+
+
+
+
+    function sourceOpen(e) {
+        URL.revokeObjectURL(audio.src);
+        const mime = 'audio/mpeg';
+        const mediaSource = e.target;
+        const sourceBuffer = mediaSource.addSourceBuffer(mime);
+
+
+        fetchAndReadBlob('yuan.amr', function(amr) {
+
+
+
+
+            const wavBuffer = AMR.toWAV(amr);
+
+            const wavData = parseWav(wavBuffer);
+
+            console.log(wavData);
+
+
+            const array = Uint8ArrayToFloat32Array(wavData.samples);
+
+
+            console.log("Got float32 array")
+
+            window.process(array).then(function (decoded) {
+
+
+                console.log("Lyra decoded");
+
+                console.log(decoded);
+
+                const mp3Encoder = new MP3Encoder();
+
+                const mp3data = mp3Encoder.toFile(decoded);
+
+                sourceBuffer.addEventListener('updateend', function (e) {
+                    if (!sourceBuffer.updating && mediaSource.readyState === 'open') {
+                        mediaSource.endOfStream();
+                        console.log("Loaded AMR-NB audio file via Media Source Extensions");
+                    }
+                });
+                sourceBuffer.appendBuffer(mp3data[0].slice(0, mp3data[0].length/2));
+
+
+            });
+
+
+            /*
+
+            */
+
+        });
+
+
+        function Uint8ArrayToFloat32Array(u8a){
+            var f32Buffer = new Float32Array(u8a.length);
+            for (var i = 0; i < u8a.length; i++) {
+                var value = u8a[i<<1] + (u8a[(i<<1)+1]<<8);
+                if (value >= 0x8000) value |= ~0x7FFF;
+                f32Buffer[i] = value / 0x8000;
+            }
+            return f32Buffer;
+        }
+
+
+
+        function parseWav(wav) {
+            function readInt(i, bytes) {
+                var ret = 0,
+                    shft = 0;
+
+                while (bytes) {
+                    ret += wav[i] << shft;
+                    shft += 8;
+                    i++;
+                    bytes--;
+                }
+                return ret;
+            }
+            if (readInt(20, 2) != 1) throw 'Invalid compression code, not PCM';
+            return {
+                sampleRate: readInt(24, 4),
+                bitsPerSample: readInt(34, 2),
+                samples: wav.subarray(44)
+            };
+        }
+
+    }
+
+
+</script>
+
 
 </body>
 </html>
