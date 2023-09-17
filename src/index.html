@@ -83,9 +83,6 @@
         console.log('The Media Source Extensions API is not supported.');
     }
 
-
-
-
     function fetchBlob(url, callback) {
         var xhr = new XMLHttpRequest();
         xhr.open('GET', url);
@@ -116,7 +113,6 @@
 
 
 
-
     function sourceOpen(e) {
         URL.revokeObjectURL(audio.src);
         const mime = 'audio/mpeg';
@@ -126,26 +122,8 @@
 
         fetchAndReadBlob('test.lyra', function(lyraEncoded) {
 
+            window.decodeLyra(lyraEncoded).then(function (decoded) {
 
-          //  const wavData = parseWav(wavBuffer);
-
-
-           // const array = Uint8ArrayToFloat32Array(wavData.samples);
-
-           // console.log("Array length");
-           // console.log(array.length);
-
-
-            console.log("Got Lyra array Buffer");
-
-            console.log(lyraEncoded)
-
-            window.process(lyraEncoded).then(function (decoded) {
-
-
-                console.log("Lyra decoded");
-
-                console.log(decoded);
 
                 const mp3Encoder = new MP3Encoder();
 
@@ -163,46 +141,8 @@
             });
 
 
-            /*
-
-            */
-
         });
-
-
-        function Uint8ArrayToFloat32Array(u8a){
-            var f32Buffer = new Float32Array(u8a.length);
-            for (var i = 0; i < u8a.length; i++) {
-                var value = u8a[i<<1] + (u8a[(i<<1)+1]<<8);
-                if (value >= 0x8000) value |= ~0x7FFF;
-                f32Buffer[i] = value / 0x8000;
-            }
-            return f32Buffer;
-        }
-
-
-
-        function parseWav(wav) {
-            function readInt(i, bytes) {
-                var ret = 0,
-                    shft = 0;
-
-                while (bytes) {
-                    ret += wav[i] << shft;
-                    shft += 8;
-                    i++;
-                    bytes--;
-                }
-                return ret;
-            }
-            if (readInt(20, 2) != 1) throw 'Invalid compression code, not PCM';
-            return {
-                sampleRate: readInt(24, 4),
-                bitsPerSample: readInt(34, 2),
-                samples: wav.subarray(44)
-            };
-        }
-
+        
     }
 
 

@@ -1,6 +1,6 @@
 /* eslint-disable */
 
-import {encodeWithLyra, decodeWithLyra, isLyraReady} from 'lyra-codec'
+import {decodeWithLyra, isLyraReady} from 'lyra-codec'
 
 
 
@@ -8,14 +8,9 @@ import {encodeWithLyra, decodeWithLyra, isLyraReady} from 'lyra-codec'
 
 
 
-window.process = function (encodedAudio) {
-
-
-
-
+window.decodeLyra = function (encodedAudio) {
 
     return new Promise(function (resolve) {
-
 
 
         setTimeout(function () {
@@ -35,16 +30,8 @@ window.process = function (encodedAudio) {
         }, 1000);
 
 
-
-
     })
-
-
-
-
-
 
 
 }
 
-//console.log(isLyraReady);
