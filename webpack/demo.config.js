@@ -41,7 +41,8 @@ module.exports = {
       patterns: [
 
         { from: "src/*.js", to: path.basename('[name].js') },
-        { from: "src/*.wav", to: path.basename('[name].wav') }
+        { from: "src/*.wav", to: path.basename('[name].wav') },
+        { from: "src/*.lyra", to: path.basename('[name].lyra') }
 
       ]
     }),

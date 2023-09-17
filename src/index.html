@@ -124,22 +124,23 @@
         const sourceBuffer = mediaSource.addSourceBuffer(mime);
 
 
-        fetchAndReadBlob('test2.wav', function(wavBuffer) {
+        fetchAndReadBlob('test.lyra', function(lyraEncoded) {
 
 
-            //const wavBuffer = AMR.toWAV(amr);
-
-            const wavData = parseWav(wavBuffer);
-
-            console.log(wavData);
+          //  const wavData = parseWav(wavBuffer);
 
 
-            const array = Uint8ArrayToFloat32Array(wavData.samples);
+           // const array = Uint8ArrayToFloat32Array(wavData.samples);
+
+           // console.log("Array length");
+           // console.log(array.length);
 
 
-            console.log("Got float32 array")
+            console.log("Got Lyra array Buffer");
 
-            window.process(array).then(function (decoded) {
+            console.log(lyraEncoded)
+
+            window.process(lyraEncoded).then(function (decoded) {
 
 
                 console.log("Lyra decoded");
