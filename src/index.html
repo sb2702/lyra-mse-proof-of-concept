@@ -2,7 +2,6 @@
 
 <head>
     <script src="lame.all.js"></script>
-    <script src="amrnb.js"></script>
 </head>
 
 <body>
@@ -12,12 +11,15 @@
 
 
 <script>
+
+
+
     const MP3Encoder = function(){
 
 
         var lib = new lamejs();
 
-        var mp3encoder = new lib.Mp3Encoder(1,   8000, 128);
+        var mp3encoder = new lib.Mp3Encoder(1,   16000, 128);
 
         function encode(buffer){
 
@@ -122,12 +124,10 @@
         const sourceBuffer = mediaSource.addSourceBuffer(mime);
 
 
-        fetchAndReadBlob('yuan.amr', function(amr) {
+        fetchAndReadBlob('test2.wav', function(wavBuffer) {
 
 
-
-
-            const wavBuffer = AMR.toWAV(amr);
+            //const wavBuffer = AMR.toWAV(amr);
 
             const wavData = parseWav(wavBuffer);
 

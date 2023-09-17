@@ -24,11 +24,11 @@ window.process = function (data) {
 
                 console.log("Ready to process");
 
-                const encodedAudio = encodeWithLyra(data, 8000);
+                const encodedAudio = encodeWithLyra(data, 16000);
                 console.log("Encoded audio");
                 console.log(encodedAudio);
 
-                const decoded = decodeWithLyra(encodedAudio, 8000, data.length);
+                const decoded = decodeWithLyra(encodedAudio, 16000, data.length);
 
                 resolve(decoded);
 
