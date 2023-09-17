@@ -6,72 +6,15 @@
 
 <body>
 
+<h3>Lyra Decoded</h3>
+<div id="status">processing... (see console.log)</div>
+<audio id="audio"  controls style="display: none;"></audio>
 
-<audio id="audio"  controls></audio>
+<h3>Control / Original</h3>
+<audio id="original" src="test.wav" controls></audio>
 
 
 <script>
-
-
-
-    const MP3Encoder = function(){
-
-
-        var lib = new lamejs();
-
-        var mp3encoder = new lib.Mp3Encoder(1,   16000, 128);
-
-        function encode(buffer){
-
-            var input = float32ToInt(buffer);
-
-            return mp3encoder.encodeBuffer(input);
-        }
-
-
-        function float32ToInt(f32){
-
-
-            var len = f32.length, i = 0;
-            var i16 = new Int16Array(len);
-
-            while(i < len)
-                i16[i] = convert(f32[i++]);
-
-            function convert(n) {
-                var v = n < 0 ? n * 32768 : n * 32767;       // convert in range [-32768, 32767]
-                return Math.max(-32768, Math.min(32768, v)); // clamp
-            }
-
-            return i16;
-
-        }
-
-        function finish(){
-            return mp3encoder.flush();
-        }
-
-
-        function toFile(buffer){
-
-            var mp3data =  [encode(buffer)];
-
-            mp3data.push(finish());
-
-            return mp3data;
-
-        }
-
-
-
-        this.encode = encode;
-        this.toFile = toFile;
-
-
-
-
-    };
-
 
     const audio = document.getElementById('audio');
 
@@ -83,36 +26,6 @@
         console.log('The Media Source Extensions API is not supported.');
     }
 
-    function fetchBlob(url, callback) {
-        var xhr = new XMLHttpRequest();
-        xhr.open('GET', url);
-        xhr.responseType = 'blob';
-        xhr.onload = function() {
-            callback(this.response);
-        };
-        xhr.onerror = function() {
-            alert('Failed to fetch ' + url);
-        };
-        xhr.send();
-    }
-
-    function readBlob(blob, callback) {
-        var reader = new FileReader();
-        reader.onload = function(e) {
-            var data = new Uint8Array(e.target.result);
-            callback(data);
-        };
-        reader.readAsArrayBuffer(blob);
-    }
-
-    function fetchAndReadBlob(url, callback) {
-        fetchBlob(url, function(blob) {
-            readBlob(blob, callback);
-        });
-    }
-
-
-
     function sourceOpen(e) {
         URL.revokeObjectURL(audio.src);
         const mime = 'audio/mpeg';
@@ -120,31 +33,29 @@
         const sourceBuffer = mediaSource.addSourceBuffer(mime);
 
 
-        fetchAndReadBlob('test.lyra', function(lyraEncoded) {
+        fetch('test.lyra').then(function (response){ return response.arrayBuffer()}).then(function (arrayBuffer){
+
+            const lyraEncoded = new Uint8Array(arrayBuffer);
 
             window.decodeLyra(lyraEncoded).then(function (decoded) {
 
-
-                const mp3Encoder = new MP3Encoder();
-
-                const mp3data = mp3Encoder.toFile(decoded);
+                const mp3Encoded = window.encodeMP3(decoded);
 
                 sourceBuffer.addEventListener('updateend', function (e) {
                     if (!sourceBuffer.updating && mediaSource.readyState === 'open') {
                         mediaSource.endOfStream();
-                        console.log("Loaded AMR-NB audio file via Media Source Extensions");
+                        console.log("Loaded Lyra audio file via Media Source Extensions");
+                        audio.style.display = "block";
+                        document.getElementById('status').style.display = "none";
                     }
                 });
-                sourceBuffer.appendBuffer(mp3data[0].slice(0, mp3data[0].length/2));
-
+                sourceBuffer.appendBuffer(mp3Encoded);
 
             });
 
-
         });
-        
-    }
 
+    }
 
 </script>
 
