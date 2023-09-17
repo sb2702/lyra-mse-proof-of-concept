@@ -36,6 +36,16 @@ module.exports = {
     new CleanWebpackPlugin({
       cleanStaleWebpackAssets: false
     }),
+
+    new CopyWebpackPlugin( {
+      patterns: [
+
+        { from: "src/*.js", to: path.basename('[name].js') },
+        { from: "src/*.amr", to: path.basename('[name].amr') }
+
+      ]
+    }),
+
     new HtmlWebpackPlugin({
         template: `src/index.html`,
         inject: 'head',
