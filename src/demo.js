@@ -84,6 +84,7 @@ window.decodeLyra = function (encodedAudio) {
 
             if(isLyraReady()){
 
+                // The deocder library requires you to know the original length (that's not encoded in the lyra file?
                 const decoded = decodeWithLyra(encodedAudio, 16000, 144556);
 
                 return resolve(decoded);
